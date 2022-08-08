@@ -24,6 +24,12 @@ type Numeric = number | boolean
 
 type Universal = Combinable & Numeric;
 
+
+// Function Overloads. See below. Added directly above main function to define, say multiple combinations or edge cases
+function add(a: number, b: number): number; // overload 1: we call add() with two numbers, we return a number
+function add(a: string, b: string): string; // overload 2: we call add() with two strings, we return a string
+function add(a: number, b: string): string; // overload 3: we call add() with a number and a string, we return a string
+function add(a: string, b: number): string; // overload 4: we call add() with a string and a number, we return a string
 function add(a: Combinable, b: Combinable) {
     // example of a type guard: typeof
     if (typeof a === 'string' || typeof b === 'string') {
@@ -32,120 +38,121 @@ function add(a: Combinable, b: Combinable) {
     return a + b;
 }
 
-type unknownEmployee = Employee | Admin;
+const result = add('Collin', 'Rukundo')
+result.split(' ');
 
-function printEmployeeInformation(emp: unknownEmployee) {
-    console.log('Name: ' + emp.name);
-    // a different type of type guard:
-    if ('privileges' in emp) {
-        console.log('Privileges: ' + emp.privileges);
-    }
-    if ('startDate' in emp) {
-        console.log('Start date: ' + emp.startDate);
-    }
-}
+// type unknownEmployee = Employee | Admin;
 
-printEmployeeInformation(e1);
-// create employee with object and leave out privileges to check type guard
-printEmployeeInformation({ name: 'Jeremy', startDate: new Date() });
+// function printEmployeeInformation(emp: unknownEmployee) {
+//     console.log('Name: ' + emp.name);
+//     // a different type of type guard:
+//     if ('privileges' in emp) {
+//         console.log('Privileges: ' + emp.privileges);
+//     }
+//     if ('startDate' in emp) {
+//         console.log('Start date: ' + emp.startDate);
+//     }
+// }
 
-class Car {
-    drive() {
-        console.log('Driving...');
-    }
-}
+// printEmployeeInformation(e1);
+// // create employee with object and leave out privileges to check type guard
+// printEmployeeInformation({ name: 'Jeremy', startDate: new Date() });
 
-class Truck {
-    drive() {
-        console.log('Driving a truck');
-    }
+// class Car {
+//     drive() {
+//         console.log('Driving...');
+//     }
+// }
 
-    loadCargo(amount: number) {
-        console.log('Loading cargo...' + amount);
-    }
-}
+// class Truck {
+//     drive() {
+//         console.log('Driving a truck');
+//     }
 
-type Vehicle = Car | Truck;
+//     loadCargo(amount: number) {
+//         console.log('Loading cargo...' + amount);
+//     }
+// }
 
-const v1 = new Car();
-const v2 = new Truck();
+// type Vehicle = Car | Truck;
 
-function useVehicle(vehicle: Vehicle) {
-    vehicle.drive();
-    // check if function exists on Vehicle class
-    if ('loadCargo' in vehicle) {
-        vehicle.loadCargo(1000);
-    }
-    // another way to check if the Class instance in question is one of type Truck. This won't work on Interfaces
-    if (vehicle instanceof Truck) {
-        vehicle.loadCargo(1000);
-    }
-}
+// const v1 = new Car();
+// const v2 = new Truck();
 
-useVehicle(v1);
-useVehicle(v2);
+// function useVehicle(vehicle: Vehicle) {
+//     vehicle.drive();
+//     // check if function exists on Vehicle class
+//     if ('loadCargo' in vehicle) {
+//         vehicle.loadCargo(1000);
+//     }
+//     // another way to check if the Class instance in question is one of type Truck. This won't work on Interfaces
+//     if (vehicle instanceof Truck) {
+//         vehicle.loadCargo(1000);
+//     }
+// }
 
-// Discriminated Unions
+// useVehicle(v1);
+// useVehicle(v2);
 
-interface Bird {
-    type: 'bird'; // not an assignment but a literal type
-    flyingSpeed: number;
-}
+// // Discriminated Unions
 
-interface Horse {
-    type: 'horse';
-    runningSpeed: number;
-}
+// interface Bird {
+//     type: 'bird'; // not an assignment but a literal type
+//     flyingSpeed: number;
+// }
 
-type Animal = Bird | Horse;
+// interface Horse {
+//     type: 'horse';
+//     runningSpeed: number;
+// }
 
-function moveAnimal(animal: Animal) {
-    // this would work but would require a lot of checks.
-    // if ('flyingSpeed' in animal) {
-    //     console.log('Moving with speed: ' + animal.flyingSpeed);
-    // }
-    let speed;
-    switch (animal.type) { // gives us 100% type safety by checking type literals.
-        case 'bird':
-            speed = animal.flyingSpeed;
-            break;
-        case 'horse':
-            speed = animal.runningSpeed;
-            break;
-    }
-    console.log('Moving at speed: ' + speed);
-}
+// type Animal = Bird | Horse;
 
-moveAnimal({ type: 'bird', flyingSpeed: 10 });
+// function moveAnimal(animal: Animal) {
+//     // this would work but would require a lot of checks.
+//     // if ('flyingSpeed' in animal) {
+//     //     console.log('Moving with speed: ' + animal.flyingSpeed);
+//     // }
+//     let speed;
+//     switch (animal.type) { // gives us 100% type safety by checking type literals.
+//         case 'bird':
+//             speed = animal.flyingSpeed;
+//             break;
+//         case 'horse':
+//             speed = animal.runningSpeed;
+//             break;
+//     }
+//     console.log('Moving at speed: ' + speed);
+// }
 
-// Type Casting
+// moveAnimal({ type: 'bird', flyingSpeed: 10 });
 
-const userInputElement = document.getElementById('user-input')!;
-// Currently TS has no way of knowing that this is an input element as it doesn't review HTML. So 
-// we added a ! to the end of the getElementById to tell TS we are sure it's not NULL. But we also have to justify userInputElement having a property of value
-// so to fix that we do:
-const userInputElement1 = <HTMLInputElement>document.getElementById('user-input'); // <HTMLInputElement> is a typecast to affirm type
-userInputElement1.value = 'Hi there!';
+// // Type Casting
 
-const userInputElement2 = document.getElementById('user-input') as HTMLInputElement // This would work well in React where components are similar to the above format.
-userInputElement2.value = 'Hi there!';
+// const userInputElement = document.getElementById('user-input')!;
+// // Currently TS has no way of knowing that this is an input element as it doesn't review HTML. So 
+// // we added a ! to the end of the getElementById to tell TS we are sure it's not NULL. But we also have to justify userInputElement having a property of value
+// // so to fix that we do:
+// const userInputElement1 = <HTMLInputElement>document.getElementById('user-input'); // <HTMLInputElement> is a typecast to affirm type
+// userInputElement1.value = 'Hi there!';
 
-// the above would be better written as:
-const userInputElement3 = document.getElementById('user-input');
-if (userInputElement3) {
-    (userInputElement3 as HTMLInputElement).value = 'Hi there!';
-}
+// const userInputElement2 = document.getElementById('user-input') as HTMLInputElement // This would work well in React where components are similar to the above format.
+// userInputElement2.value = 'Hi there!';
 
-// Index properties: Generic properties where we don't know the context of properties to expect and how many they are
+// // the above would be better written as:
+// const userInputElement3 = document.getElementById('user-input');
+// if (userInputElement3) {
+//     (userInputElement3 as HTMLInputElement).value = 'Hi there!';
+// }
 
-interface ErrorContainer { // an example { email: 'Not a valid email', username: 'Must start with a vowel!'}
-    [prop: string]: string;
-    // the above means we expect a property variable of type string with a string value
-}
+// // Index properties: Generic properties where we don't know the context of properties to expect and how many they are
 
-const errorBag: ErrorContainer = {
-    email: 'Not a valid email',
-    username: 'Must start with a vowel!'
-}
+// interface ErrorContainer { // an example { email: 'Not a valid email', username: 'Must start with a vowel!'}
+//     [prop: string]: string;
+//     // the above means we expect a property variable of type string with a string value
+// }
 
-// Function Overloads
+// const errorBag: ErrorContainer = {
+//     email: 'Not a valid email',
+//     username: 'Must start with a vowel!'
+// }
