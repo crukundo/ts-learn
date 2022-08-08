@@ -25,7 +25,8 @@ type Numeric = number | boolean
 type Universal = Combinable & Numeric;
 
 
-// Function Overloads. See below. Added directly above main function to define, say multiple combinations or edge cases
+// Function Overloads. 
+//See below. Added directly above main function to define, say multiple combinations or edge cases
 function add(a: number, b: number): number; // overload 1: we call add() with two numbers, we return a number
 function add(a: string, b: string): string; // overload 2: we call add() with two strings, we return a string
 function add(a: number, b: string): string; // overload 3: we call add() with a number and a string, we return a string
@@ -40,6 +41,40 @@ function add(a: Combinable, b: Combinable) {
 
 const result = add('Collin', 'Rukundo')
 result.split(' ');
+
+// Optional Chaining: we aren't sure where the data we are receiving say from API has a certain property set or undefined.
+const fetchedUserData = {
+    id: 'u1',
+    name: 'Collin',
+    job: { title: 'Bitcoiner', description: 'Maximalism' }
+}
+
+// assuming the job nested property doesn't exist, TS will yell at us. All below methods won't work.
+// console.log(fetchedUserData.job.title);
+// console.log(fetchedUserData.job && fetchedUserData.job.title); 
+
+// Optional chaining is done like this: using question marks: basically an if check for whether property exists before it accesses it.
+console.log(fetchedUserData?.job?.title);
+
+
+// Nullish Coalescing: say we don't know a property is null or undefined. 
+
+const userInput = '';
+// if we want to store userInput we are unsure about, we can do this instead. But it will return the same default for an empty string above
+const storedUser = userInput || 'DEFAULT'; // we set a "default" value
+console.log(storedUser);
+
+const userInput2 = undefined;
+// To be sure that the fallback only works when it's null or undefined. Fail with grace :)
+const storedUser2 = userInput ?? 'DEFAULT'; // add nullish coalescing operator
+console.log(storedUser2);
+
+
+
+
+
+
+
 
 // type unknownEmployee = Employee | Admin;
 
