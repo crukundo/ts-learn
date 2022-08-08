@@ -108,6 +108,7 @@
     "./src/obs-array-enums.ts",
     "./src/analytics.ts",
     "./src/classes.ts",
+    "./src/interfaces.ts",
     "node_modules" // already default excluded though.
   ],
   "include": [
