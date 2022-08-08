@@ -135,3 +135,17 @@ const userInputElement3 = document.getElementById('user-input');
 if (userInputElement3) {
     (userInputElement3 as HTMLInputElement).value = 'Hi there!';
 }
+
+// Index properties: Generic properties where we don't know the context of properties to expect and how many they are
+
+interface ErrorContainer { // an example { email: 'Not a valid email', username: 'Must start with a vowel!'}
+    [prop: string]: string;
+    // the above means we expect a property variable of type string with a string value
+}
+
+const errorBag: ErrorContainer = {
+    email: 'Not a valid email',
+    username: 'Must start with a vowel!'
+}
+
+// Function Overloads
