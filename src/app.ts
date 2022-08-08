@@ -1,193 +1,96 @@
-// Type guards: Check if property or object exists before using
+// Generics
+// const names: Array<string> = []; // we need to define the array type e.g as string so typescript can enforce string things
 
-type Admin = {
-    name: string;
-    privileges: string[];
-};
+// const promise: Promise<string> = new Promise((resolve, reject) => {
+//     setTimeout(() => {
+//         resolve('Completed!');
+//     }, 2000);
+// }); 
 
-type Employee = {
-    name: string;
-    startDate: Date;
-};
+// promise.then(data => {
+//     data.split(' ');
+// })
 
-type ElevatedEmployee = Admin & Employee;
+function merge<T extends object, U extends object>(objA: T, objB: U) {
+    return Object.assign(objA, objB);
+}
+const mergedObj = merge({ name: 'Collin', hobbies: ['Bitcoin'] }, { age: 30 });
+console.log(mergedObj);
 
-const e1: ElevatedEmployee = {
-    name: 'Collin',
-    privileges: ['create-server'],
-    startDate: new Date()
+interface Lengthy {
+    length: number;
 }
 
-// some union types
-type Combinable = string | number;
-type Numeric = number | boolean
-
-type Universal = Combinable & Numeric;
-
-
-// Function Overloads. 
-//See below. Added directly above main function to define, say multiple combinations or edge cases
-function add(a: number, b: number): number; // overload 1: we call add() with two numbers, we return a number
-function add(a: string, b: string): string; // overload 2: we call add() with two strings, we return a string
-function add(a: number, b: string): string; // overload 3: we call add() with a number and a string, we return a string
-function add(a: string, b: number): string; // overload 4: we call add() with a string and a number, we return a string
-function add(a: Combinable, b: Combinable) {
-    // example of a type guard: typeof
-    if (typeof a === 'string' || typeof b === 'string') {
-        return a.toString() + b.toString()
+function countAndDescribe<T extends Lengthy>(element: T): [T, string] {
+    let descriptionText = 'Got no value!';
+    if (element.length === 1) {
+        descriptionText = 'Got 1 element'
+    } else if (element.length > 0) {
+        descriptionText = 'Got ' + element.length + ' elements'
     }
-    return a + b;
+    return [element, descriptionText];
 }
 
-const result = add('Collin', 'Rukundo')
-result.split(' ');
+console.log(countAndDescribe('Hi there!'));
 
-// Optional Chaining: we aren't sure where the data we are receiving say from API has a certain property set or undefined.
-const fetchedUserData = {
-    id: 'u1',
-    name: 'Collin',
-    job: { title: 'Bitcoiner', description: 'Maximalism' }
+function extractAndConvert<T extends object, U extends keyof T>(obj: T, key: U) {
+    return 'Value: ' + obj[key];
+}
+console.log(extractAndConvert({ name: 'Collin' }, 'name'));
+
+// A generic class: Flexible classes. 
+class DataStorage<T extends string | number | boolean> { // won't work well with object types
+    private data: T[] = [];
+
+    addItem(item: T) {
+        this.data.push(item);
+    }
+
+    removeItem(item: T) {
+        if (this.data.indexOf(item) === -1) {
+            return;
+        }
+        this.data.splice(this.data.indexOf(item), 1);
+    }
+
+    getItems() {
+        return [...this.data];
+    }
 }
 
-// assuming the job nested property doesn't exist, TS will yell at us. All below methods won't work.
-// console.log(fetchedUserData.job.title);
-// console.log(fetchedUserData.job && fetchedUserData.job.title); 
+const textStorage = new DataStorage<string>();
+textStorage.addItem('Collin');
+textStorage.addItem('Rukundo');
+textStorage.removeItem('Collin');
+console.log(textStorage.getItems());
 
-// Optional chaining is done like this: using question marks: basically an if check for whether property exists before it accesses it.
-console.log(fetchedUserData?.job?.title);
+const numberStorage = new DataStorage<number | string>();
 
+// const objStorage = new DataStorage<object>();
 
-// Nullish Coalescing: say we don't know a property is null or undefined. 
+// objStorage.addItem({ name: 'Collin' });
+// objStorage.addItem({ name: 'Rukundo' });
 
-const userInput = '';
-// if we want to store userInput we are unsure about, we can do this instead. But it will return the same default for an empty string above
-const storedUser = userInput || 'DEFAULT'; // we set a "default" value
-console.log(storedUser);
+// objStorage.removeItem({ name: 'Collin' }); // will fail for objects and still return Collin because of indexOf.
+// console.log(objStorage.getItems());
 
-const userInput2 = undefined;
-// To be sure that the fallback only works when it's null or undefined. Fail with grace :)
-const storedUser2 = userInput ?? 'DEFAULT'; // add nullish coalescing operator
-console.log(storedUser2);
+interface CourseGoal {
+    title: string;
+    description: string;
+    completeUntil: Date;
+}
 
+// Partial Generic Utility Type
+function createCourseGoal(title: string, description: string, date: Date): CourseGoal {
+    let courseGoal: Partial<CourseGoal> = {};
+    courseGoal.title = title;
+    courseGoal.description = description;
+    courseGoal.completeUntil = date;
 
+    return courseGoal as CourseGoal;
+}
 
-
-
-
-
-
-// type unknownEmployee = Employee | Admin;
-
-// function printEmployeeInformation(emp: unknownEmployee) {
-//     console.log('Name: ' + emp.name);
-//     // a different type of type guard:
-//     if ('privileges' in emp) {
-//         console.log('Privileges: ' + emp.privileges);
-//     }
-//     if ('startDate' in emp) {
-//         console.log('Start date: ' + emp.startDate);
-//     }
-// }
-
-// printEmployeeInformation(e1);
-// // create employee with object and leave out privileges to check type guard
-// printEmployeeInformation({ name: 'Jeremy', startDate: new Date() });
-
-// class Car {
-//     drive() {
-//         console.log('Driving...');
-//     }
-// }
-
-// class Truck {
-//     drive() {
-//         console.log('Driving a truck');
-//     }
-
-//     loadCargo(amount: number) {
-//         console.log('Loading cargo...' + amount);
-//     }
-// }
-
-// type Vehicle = Car | Truck;
-
-// const v1 = new Car();
-// const v2 = new Truck();
-
-// function useVehicle(vehicle: Vehicle) {
-//     vehicle.drive();
-//     // check if function exists on Vehicle class
-//     if ('loadCargo' in vehicle) {
-//         vehicle.loadCargo(1000);
-//     }
-//     // another way to check if the Class instance in question is one of type Truck. This won't work on Interfaces
-//     if (vehicle instanceof Truck) {
-//         vehicle.loadCargo(1000);
-//     }
-// }
-
-// useVehicle(v1);
-// useVehicle(v2);
-
-// // Discriminated Unions
-
-// interface Bird {
-//     type: 'bird'; // not an assignment but a literal type
-//     flyingSpeed: number;
-// }
-
-// interface Horse {
-//     type: 'horse';
-//     runningSpeed: number;
-// }
-
-// type Animal = Bird | Horse;
-
-// function moveAnimal(animal: Animal) {
-//     // this would work but would require a lot of checks.
-//     // if ('flyingSpeed' in animal) {
-//     //     console.log('Moving with speed: ' + animal.flyingSpeed);
-//     // }
-//     let speed;
-//     switch (animal.type) { // gives us 100% type safety by checking type literals.
-//         case 'bird':
-//             speed = animal.flyingSpeed;
-//             break;
-//         case 'horse':
-//             speed = animal.runningSpeed;
-//             break;
-//     }
-//     console.log('Moving at speed: ' + speed);
-// }
-
-// moveAnimal({ type: 'bird', flyingSpeed: 10 });
-
-// // Type Casting
-
-// const userInputElement = document.getElementById('user-input')!;
-// // Currently TS has no way of knowing that this is an input element as it doesn't review HTML. So 
-// // we added a ! to the end of the getElementById to tell TS we are sure it's not NULL. But we also have to justify userInputElement having a property of value
-// // so to fix that we do:
-// const userInputElement1 = <HTMLInputElement>document.getElementById('user-input'); // <HTMLInputElement> is a typecast to affirm type
-// userInputElement1.value = 'Hi there!';
-
-// const userInputElement2 = document.getElementById('user-input') as HTMLInputElement // This would work well in React where components are similar to the above format.
-// userInputElement2.value = 'Hi there!';
-
-// // the above would be better written as:
-// const userInputElement3 = document.getElementById('user-input');
-// if (userInputElement3) {
-//     (userInputElement3 as HTMLInputElement).value = 'Hi there!';
-// }
-
-// // Index properties: Generic properties where we don't know the context of properties to expect and how many they are
-
-// interface ErrorContainer { // an example { email: 'Not a valid email', username: 'Must start with a vowel!'}
-//     [prop: string]: string;
-//     // the above means we expect a property variable of type string with a string value
-// }
-
-// const errorBag: ErrorContainer = {
-//     email: 'Not a valid email',
-//     username: 'Must start with a vowel!'
-// }
+// Readonly Generic Utility Type
+const names: Readonly<string[]> = ['Rukundo', 'Niina'];
+//names.push('Collin'); // won't work because object is readonly.
+//names.pop('Rukundo'); // won't work because object is readonly.
