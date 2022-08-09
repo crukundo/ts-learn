@@ -1,96 +1,178 @@
-// Generics
-// const names: Array<string> = []; // we need to define the array type e.g as string so typescript can enforce string things
+// Create reusable validation function
 
-// const promise: Promise<string> = new Promise((resolve, reject) => {
-//     setTimeout(() => {
-//         resolve('Completed!');
-//     }, 2000);
-// }); 
-
-// promise.then(data => {
-//     data.split(' ');
-// })
-
-function merge<T extends object, U extends object>(objA: T, objB: U) {
-    return Object.assign(objA, objB);
-}
-const mergedObj = merge({ name: 'Collin', hobbies: ['Bitcoin'] }, { age: 30 });
-console.log(mergedObj);
-
-interface Lengthy {
-    length: number;
+interface Validatable {
+    value: string | number;
+    required?: boolean;
+    minLength?: number;
+    maxLength?: number;
+    min?: number;
+    max?: number;
 }
 
-function countAndDescribe<T extends Lengthy>(element: T): [T, string] {
-    let descriptionText = 'Got no value!';
-    if (element.length === 1) {
-        descriptionText = 'Got 1 element'
-    } else if (element.length > 0) {
-        descriptionText = 'Got ' + element.length + ' elements'
-    }
-    return [element, descriptionText];
-}
+function validate(validatableInput: Validatable) {
+    let isValid = true; // hypothesis. Assuming it's valid at beginning
 
-console.log(countAndDescribe('Hi there!'));
-
-function extractAndConvert<T extends object, U extends keyof T>(obj: T, key: U) {
-    return 'Value: ' + obj[key];
-}
-console.log(extractAndConvert({ name: 'Collin' }, 'name'));
-
-// A generic class: Flexible classes. 
-class DataStorage<T extends string | number | boolean> { // won't work well with object types
-    private data: T[] = [];
-
-    addItem(item: T) {
-        this.data.push(item);
+    // check one: does the required input have some values
+    if (validatableInput.required) {
+        isValid = isValid && validatableInput.value.toString().trim().length !== 0; // since true initially, and if all after && is false will equal False
     }
 
-    removeItem(item: T) {
-        if (this.data.indexOf(item) === -1) {
-            return;
+    // check that minimum Length checks out
+    if (validatableInput.minLength != null && typeof validatableInput.value === 'string') {
+        isValid = isValid && validatableInput.value.length >= validatableInput.minLength; // since true initially, and if all after && is false will equal False
+    }
+    // check that maximum Length checks out
+    if (validatableInput.maxLength != null && typeof validatableInput.value === 'string') {
+        isValid = isValid && validatableInput.value.length <= validatableInput.maxLength; // since true initially, and if all after && is false will equal False
+    }
+    // check if min people required checks out
+    if (validatableInput.min != null && typeof validatableInput.value === 'number') {
+        isValid = isValid && validatableInput.value >= validatableInput.min;
+    }
+    // check if max people required checks out
+    if (validatableInput.max != null && typeof validatableInput.value === 'number') {
+        isValid = isValid && validatableInput.value <= validatableInput.max;
+    }
+
+    // deduce based on the above checks
+    return isValid;
+}
+
+// an autobind decorator: fixes the bind problem on submitHandler()
+function autobind(target: any, methodName: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+    const adjDescriptor: PropertyDescriptor = {
+        configurable: true,
+        get() {
+            const boundFn = originalMethod.bind(this);
+            return boundFn;
         }
-        this.data.splice(this.data.indexOf(item), 1);
+    };
+
+    return adjDescriptor;
+}
+
+// Project List Class
+class ProjectList {
+    templateListElement: HTMLTemplateElement; //<tempalate id="project-input">...</template>
+    hostElement: HTMLDivElement; // <div id="app"></div>
+    listSectionElement: HTMLElement; // <div id="app"></div>
+    constructor(private type: 'active' | 'finished') {
+        this.templateListElement = document.getElementById('project-list')! as HTMLTemplateElement;
+        this.hostElement = document.getElementById('app')! as HTMLDivElement;
+
+        // get the content in the <template> tag
+        const listTemplateContent = document.importNode(this.templateListElement.content, true);
+        this.listSectionElement = listTemplateContent.firstElementChild as HTMLElement;
+        this.listSectionElement.id = `${this.type}-projects`
+        this.attachList();
+        this.renderListContent();
     }
 
-    getItems() {
-        return [...this.data];
+    private renderListContent() {
+        const listId = `${this.type} - projects-list`;
+        this.listSectionElement.querySelector('ul')!.id = listId;
+        this.listSectionElement.querySelector('h2')!.textContent = this.type.toUpperCase() + ' Projects';
+    }
+
+    private attachList() {
+        // insert html element in the app div
+        this.hostElement.insertAdjacentElement('beforeend', this.listSectionElement);
     }
 }
 
-const textStorage = new DataStorage<string>();
-textStorage.addItem('Collin');
-textStorage.addItem('Rukundo');
-textStorage.removeItem('Collin');
-console.log(textStorage.getItems());
+// Project Input Class
+class ProjectInput {
+    templateElement: HTMLTemplateElement; //<tempalate id="project-input">...</template>
+    hostElement: HTMLDivElement; // <div id="app"></div>
+    formElement: HTMLFormElement; // <form>...</form>
+    titleInputElement: HTMLInputElement;
+    descriptionInputElement: HTMLInputElement;
+    peopleInputElement: HTMLInputElement;
 
-const numberStorage = new DataStorage<number | string>();
+    constructor() {
+        this.templateElement = document.getElementById('project-input')! as HTMLTemplateElement;
+        this.hostElement = document.getElementById('app')! as HTMLDivElement;
 
-// const objStorage = new DataStorage<object>();
+        // get the content in the <template> tag
+        const mainTemplateContent = document.importNode(this.templateElement.content, true);
+        this.formElement = mainTemplateContent.firstElementChild as HTMLFormElement;
+        this.formElement.id = 'user-input';
 
-// objStorage.addItem({ name: 'Collin' });
-// objStorage.addItem({ name: 'Rukundo' });
+        this.titleInputElement = this.formElement.querySelector('#title')!
+        this.descriptionInputElement = this.formElement.querySelector('#description')!
+        this.peopleInputElement = this.formElement.querySelector('#people')!
 
-// objStorage.removeItem({ name: 'Collin' }); // will fail for objects and still return Collin because of indexOf.
-// console.log(objStorage.getItems());
+        this.configureSubmit();
+        this.attachForm();
+    }
 
-interface CourseGoal {
-    title: string;
-    description: string;
-    completeUntil: Date;
+    private getUserInput(): [string, string, number] | void { // returns a tuple with 3 elements in these types
+        const enteredTitle = this.titleInputElement.value;
+        const enteredDescription = this.descriptionInputElement.value;
+        const enteredPeople = this.peopleInputElement.value;
+
+        // set our validation logic
+        const titleValidatable: Validatable = {
+            value: enteredTitle,
+            required: true
+        };
+        const descriptionValidatable: Validatable = {
+            value: enteredDescription,
+            required: true,
+            minLength: 5
+        };
+        const peopleValidatable: Validatable = {
+            value: +enteredPeople,
+            required: true,
+            min: 1,
+        };
+
+        // run the checks. if any is false, show alert
+        if (
+            !validate(titleValidatable) ||
+            !validate(descriptionValidatable) ||
+            !validate(peopleValidatable)
+        ) {
+            alert('Invalid input, try again!')
+            return;
+        } else {
+            return [enteredTitle, enteredDescription, +enteredPeople];
+        }
+
+
+    }
+
+    // clear inputs on form submission
+    private clearInputs() {
+        this.titleInputElement.value = '';
+        this.descriptionInputElement.value = '';
+        this.peopleInputElement.value = '';
+    }
+
+    @autobind
+    private submitHandler(event: Event) {
+        event.preventDefault();
+        const userInput = this.getUserInput();
+        // check that we have a tuple. Tuples are arrays
+        if (Array.isArray(userInput)) {
+            const [title, desc, people] = userInput;
+            console.log(title, desc, people);
+            this.clearInputs();
+        }
+    }
+
+    private configureSubmit() {
+        // trigger submitHandler function whenever form submitted
+        this.formElement.addEventListener('submit', this.submitHandler.bind(this));
+    }
+
+    private attachForm() {
+        // insert html element in the app div
+        this.hostElement.insertAdjacentElement('afterbegin', this.formElement)
+    }
 }
 
-// Partial Generic Utility Type
-function createCourseGoal(title: string, description: string, date: Date): CourseGoal {
-    let courseGoal: Partial<CourseGoal> = {};
-    courseGoal.title = title;
-    courseGoal.description = description;
-    courseGoal.completeUntil = date;
-
-    return courseGoal as CourseGoal;
-}
-
-// Readonly Generic Utility Type
-const names: Readonly<string[]> = ['Rukundo', 'Niina'];
-//names.push('Collin'); // won't work because object is readonly.
-//names.pop('Rukundo'); // won't work because object is readonly.
+const projectInput = new ProjectInput();
+const activeProjectList = new ProjectList('active');
+const finishedProjectList = new ProjectList('finished');
