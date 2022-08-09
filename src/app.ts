@@ -10,15 +10,23 @@ class Project {
 
 // 5. State Management Class: Listen for changes on classes and implement
 
-type Listener = (items: Project[]) => void;
+type Listener<T> = (items: T[]) => void;
 
-class ProjectState {
-    private listeners: Listener[] = [];
+//9. General state
+class State<T> {
+    protected listeners: Listener<T>[] = [];
+
+    addListener(listenerFn: Listener<T>) {
+        this.listeners.push(listenerFn);
+    }
+}
+
+class ProjectState extends State<Project> {
     private projects: Project[] = [];
     private static instance: ProjectState;
 
     private constructor() {
-
+        super();
     }
 
     static getInstance() {
@@ -27,10 +35,6 @@ class ProjectState {
         }
         this.instance = new ProjectState();
         return this.instance;
-    }
-
-    addListener(listenerFn: Listener) {
-        this.listeners.push(listenerFn);
     }
 
     addProject(title: string, description: string, numOfPeople: number) {
@@ -127,6 +131,36 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
     abstract renderContent(): void;
 }
 
+// 10. Project Item Class to use in ProjectList class
+class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
+    private project: Project;
+
+    // getter
+    get persons() {
+        if (this.project.people === 1) {
+            return '1 person';
+        } else {
+            return `${this.project.people} persons`
+        }
+    }
+
+    constructor(hostId: string, project: Project) {
+        super('single-project', hostId, false, project.id);
+        this.project = project;
+
+        this.configure();
+        this.renderContent();
+    }
+
+    configure() { }
+
+    renderContent() {
+        this.element.querySelector('h2')!.textContent = this.project.title;
+        this.element.querySelector('h3')!.textContent = this.persons + ' assigned';
+        this.element.querySelector('p')!.textContent = this.project.description;
+    }
+}
+
 //4. Project List Class
 class ProjectList extends Component<HTMLDivElement, HTMLElement> {
     assignedProjects: Project[];
@@ -161,10 +195,8 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
     private renderProjects() {
         const listEl = document.getElementById(`${this.type}-projects-list`)! as HTMLUListElement;
         listEl.innerHTML = '';
-        for (const projectItem of this.assignedProjects) {
-            const listItem = document.createElement('li');
-            listItem.textContent = projectItem.title;
-            listEl.appendChild(listItem);
+        for (const item of this.assignedProjects) {
+            new ProjectItem(this.element.querySelector('ul')!.id, item);
         }
     }
 
