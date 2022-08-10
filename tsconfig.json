@@ -112,9 +112,11 @@
     "./src/advanced-types.ts",
     "src/generic-types.ts",
     "src/decorators.ts",
+    "src/drag-drop-app/app.ts",
     "node_modules" // already default excluded though.
   ],
   "include": [
-    "src/app.ts"
+    "src/app.ts",
+    "node_modules/axios/index.d.ts"
   ]
 }
