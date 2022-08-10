@@ -3,7 +3,7 @@ import axios from '../node_modules/axios/index';
 const form = document.querySelector('form')!;
 const addressInput = document.getElementById('address')! as HTMLInputElement;
 
-const GOOGLE_API_KEY = 'AIzaSyBnOpgDC9hxo7e4htIrBly5bRF3uDZ3gbs';
+const GOOGLE_API_KEY = 'AIzaSyBnOpgDC9hxo7e4htIrBly5bRF3uDZ3gbs'; // has been instantly invalidated. 
 
 
 type GoogleMapsResponseObject = {
